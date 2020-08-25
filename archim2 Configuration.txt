@@ -1,0 +1,93 @@
+
+#define MICROSTEP_MODES {32,32,32,32,32} // [1,2,4,8,16,32]
+
+#define DEFAULT_PWM_MOTOR_CURRENT {1000, 1000, 1000, 1000, 1000} //X Y Z E0 E1, 1000 = 1000mAh
+
+#define SDSUPPORT
+#define REPRAP_DISCOUNT_FULL_GRAPHIC_SMART_CONTROLLER
+---------------------------------------------------------------------------------
+
+Downloaded the Firmware Here
+https://github.com/Allted/Marlin/tree/MPCNC_Archim2_T8_16T_LCD_16step
+* I thought this would be a download, install, win....it was not
+
+Reviewed this for wiring and additional notes @ https://reprap.org/wiki/Archim2
+* Needed to jumper power from imput C to input B
+* Install Archim board support: https://reprap.org/wiki/Archim_v1.0#Install_Arduino_Addons
+* Install TMCStepper library: Arduino IDE-> Sketch menu -> Include Library -> Manage Libraries -> install TMCStepper
+
+Added/uncommented the following to configuration.h
+* #define X_DRIVER_TYPE TMC2130
+* #define Y_DRIVER_TYPE TMC2130
+* #define Z_DRIVER_TYPE TMC2130
+* #define E0_DRIVER_TYPE TMC2130
+* #define E1_DRIVER_TYPE TMC2130
+* #define USE_XMAX_PLUG
+* #define USE_YMAX_PLUG
+* #define USE_ZMAX_PLUG
+* #define INDIVIDUAL_AXIS_HOMING_MENU
+
+in configuration_adv.h uncommented(removed the “//”)
+* #define TMC_USE_SW_SPI
+* #define Y_DUAL_STEPPER_DRIVERS
+* #define Y_DUAL_ENDSTOPS
+* #define Z_DUAL_STEPPER_DRIVERS
+* #define Z_DUAL_ENDSTOPS
+
+Display Issues
+* I tried adding U8Glib, but it sounds like it's already bundled
+* My pinouts on the archim were backwards from the Full Graphic Smart Controller, so I trimmed the little tab on the connector so I could turn it around on the board end. BOOM(I did download the U8Glib, I just didn't add it, so if you have issues try that first.
+
+Dual Endstops
+* rewired Y and Z so that Y2 is on the E0 plug, and Z2 is in the E1 Plug. Took me a minute to figure out which way was the right way wiring the endstops as they're not clearly marked on the limit switches. for me it was black at the closed end of the switch V, white in the middle
+
+You will need to modify the pins_ARCHIM2.h file
+ Current Steppers section from Archim2 pins file (marlin\src\pins\pin_ARCHIM2.h)
+
+//
+// Steppers
+//
+#define X_STEP_PIN         38   // PC6 X-STEP *
+#define X_DIR_PIN          37   // PC5 X-DIR *
+#define X_ENABLE_PIN       41   // PC9 EN1
+#ifndef X_CS_PIN
+  #define X_CS_PIN         39   // PC7 X_nCS
+#endif
+
+#define Y_STEP_PIN         51   // PC12 Y-STEP *
+#define Y_DIR_PIN          92   // PC11 Y-DIR -AddOns *
+#define Y_ENABLE_PIN       49   // PC14 Y-EN *
+#ifndef Y_CS_PIN
+  #define Y_CS_PIN         50   // PC13 Y_nCS
+#endif
+
+#define Z_STEP_PIN         46   // PC17 Z-STEP *
+#define Z_DIR_PIN          47   // PC16 Z-DIR *
+#define Z_ENABLE_PIN       44   // PC19 Z-END *
+#ifndef Z_CS_PIN
+  #define Z_CS_PIN         45   // PC18 Z_nCS
+#endif
+
+#define E0_STEP_PIN        93   // PB10 E1-STEP -AddOns *
+#define E0_DIR_PIN         94   // PC10 E1-DIR -AddOns *
+#define E0_ENABLE_PIN      95   // PB22 E1-EN -AddOns *
+#ifndef E0_CS_PIN
+  #define E0_CS_PIN        98   // PC20 E1_nCS -AddOns *
+#endif
+
+#define E1_STEP_PIN        107   // PB26 E2_STEP *
+#define E1_DIR_PIN         96   // PB24 E2_DIR -AddOns *
+#define E1_ENABLE_PIN      105   // PA11 E2-EN
+#ifndef E1_CS_PIN
+  #define E1_CS_PIN        104   // PA10 E2_nCS
+#endif
+
+#define E2_STEP_PIN        22   // PB26 E2_STEP *
+#define E2_DIR_PIN         97   // PB24 E2_DIR -AddOns *
+#define E2_ENABLE_PIN      18   // PA11 E2-EN
+#ifndef E2_CS_PIN
+  #define E2_CS_PIN        19   // PA10 E2_nCS
+#endif
+
+
+At this point I was able to succesfully flash the firmware, and tested all the motors and limit switches. I was a bit surprised that Z2 used the top left connection if you're looking at the board with the stepper motors at the bottom, but all steppers and switches flagged appropriately.
